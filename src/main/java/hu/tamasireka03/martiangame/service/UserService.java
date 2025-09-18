@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class UserService {
 
@@ -21,46 +19,55 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    //Új felhasználó regisztrációja
-    public User registerUser(String username, String martianName, String rawPassword){
+    // Új felhasználó regisztrációja
+    public UserDTO registerUser(String username, String martianName, String rawPassword){
         if (userRepository.findByMartianName(martianName).isPresent()) {
-            throw new RuntimeException("Ez a marslakó név már foglalt!");
+            throw new IllegalArgumentException("Ez a marslakó név már foglalt!");
+        }
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Ez a felhasználónév már foglalt!");
         }
 
         User newUser = User.builder()
                 .username(username)
                 .martianName(martianName)
                 .password(passwordEncoder.encode(rawPassword))
-                .chocolate(0)
+                .chocolateCount(0)
                 .build();
 
-        return userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
+
+        return new UserDTO(savedUser.getUserid(), savedUser.getUsername(), savedUser.getMartianName(), savedUser.getChocolateCount());
     }
 
-    //Felhasználó bejelentkezése
+    // Felhasználó bejelentkezése
     public UserDTO loginUser(String username, String rawPassword) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Nincs ilyen felhasználó!"));
+                .orElseThrow(() -> new IllegalArgumentException("Nincs ilyen felhasználó!"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new RuntimeException("Hibás jelszó!");
+            throw new IllegalArgumentException("Hibás jelszó!");
         }
 
-        return new UserDTO(user.getId(), user.getUsername(), user.getMartianName(), user.getChocolate());
+        return new UserDTO(user.getUserid(), user.getUsername(), user.getMartianName(), user.getChocolateCount());
     }
 
-    //csoki darabjának lekérdezése
+    // Csoki darabjának lekérdezése
     public int getChocolate(Long userId){
         return userRepository.findById(userId)
-                .map(User::getChocolate)
-                .orElseThrow(() -> new RuntimeException("Felhasználó nem található"));
+                .map(User::getChocolateCount)
+                .orElseThrow(() -> new IllegalArgumentException("Felhasználó nem található"));
     }
 
-    //csoki hozzáadása
+    // Csoki hozzáadása
     public void addChocolate(Long userId, int amount){
+        if (amount <= 0) {
+            throw new IllegalArgumentException("A csoki mennyiségének pozitívnak kell lennie!");
+        }
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Felhasználó nem található"));
-        user.setChocolate(user.getChocolate() + amount);
+                .orElseThrow(() -> new IllegalArgumentException("Felhasználó nem található"));
+        user.setChocolateCount(user.getChocolateCount() + amount);
         userRepository.save(user);
     }
 }

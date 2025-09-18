@@ -1,6 +1,7 @@
 package hu.tamasireka03.martiangame.dto;
 
 import lombok.*;
+import org.antlr.v4.runtime.misc.NotNull;
 
 @Getter
 @Setter
@@ -8,11 +9,14 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserDTO {
-    @NonNull
-    private Long id;
-    @NonNull
+    @NotNull
+    private Long userid;
+
+    @NotNull
     private String username;
-    @NonNull
+
+    @NotNull
     private String martianName;
-    private int chocolate;
+
+    private int chocolateCount;
 }

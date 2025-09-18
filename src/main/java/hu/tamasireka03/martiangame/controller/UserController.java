@@ -1,9 +1,8 @@
 package hu.tamasireka03.martiangame.controller;
 
 import hu.tamasireka03.martiangame.dto.UserDTO;
-import hu.tamasireka03.martiangame.entities.User;
 import hu.tamasireka03.martiangame.service.UserService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -12,49 +11,32 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController( final UserService userService ) {
+    @Autowired
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
-    //Regisztráció
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestParam String username,
-                                             @RequestParam String martianName,
-                                             @RequestParam String password){
-        return ResponseEntity.ok(userService.registerUser(username, martianName, password));
+    public UserDTO register(@RequestParam String username,
+                            @RequestParam String martianName,
+                            @RequestParam String password) {
+        return userService.registerUser(username, martianName, password);
     }
 
-    //bejelentkezés
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestParam String martianName,
-                                       @RequestParam String password){
-        try{
-            UserDTO user = userService.loginUser(martianName, password);
-
-            UserDTO dto = new UserDTO(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getMartianName(),
-                    user.getChocolate()
-            );
-
-            return ResponseEntity.ok(dto);
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    @PostMapping("/")
+    public UserDTO login(@RequestParam String username,
+                         @RequestParam String password) {
+        return userService.loginUser(username, password);
     }
 
-    //Csoki lekérdezése
-    @GetMapping("/{id}/chocolate")
-    public ResponseEntity<Integer> getChocolate( @PathVariable Long id ){
-        return ResponseEntity.ok(userService.getChocolate(id));
+    @GetMapping("/{userId}/chocolate")
+    public int getChocolate(@PathVariable Long userId) {
+        return userService.getChocolate(userId);
     }
 
-    //Csoki hozzáadása
-    @PostMapping("{id}/chocolate")
-    public ResponseEntity<String> addChocolate(@PathVariable Long id, @RequestParam int amount){
-        userService.addChocolate(id, amount);
-        return ResponseEntity.ok("Csoki hozzáadva!");
+    @PostMapping("/{userId}/chocolate/add")
+    public void addChocolate(@PathVariable Long userId,
+                             @RequestParam int amount) {
+        userService.addChocolate(userId, amount);
     }
 }

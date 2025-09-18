@@ -3,8 +3,10 @@ package hu.tamasireka03.martiangame.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
-@Table(name = "users")
+@Table(name = "User")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,7 +15,7 @@ import lombok.*;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userid;
 
     @Column(nullable = false)
     private String username;
@@ -25,5 +27,11 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private int chocolate;
+    private int chocolateCount;
+
+    @OneToMany(mappedBy = "user")
+    private List<DiaryEntry> diaryEntries;
+
+    @OneToMany(mappedBy = "user")
+    private List<DoneMission> doneMissions;
 }
